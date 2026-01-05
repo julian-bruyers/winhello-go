@@ -1,22 +1,18 @@
 # winhello-go: Windows Hello Authentication for Go
 
-A Go library providing seamless Windows Hello biometric authentication (fingerprint, facial recognition, PIN) on Windows systems.
+A **lightweight**, **zero external dependencies** and **simple to use** Go library providing Windows Hello biometric authentication (fingerprint, facial recognition, PIN) on Windows systems.
 
 ## Overview
-
 **winhello-go** bridges Go with the Windows Hello APIs through a native C++ DLL. Use biometric authentication in your Go applications without dealing with complex WinRT APIs directly.
 
 ### Features
-
 - Native Windows Hello support (fingerprint, facial recognition, PIN)
 - Supports AMD64 and ARM64 architectures
-- Automatic DLL extraction and loading from embedded binaries
-- Comprehensive error handling with specific error types
 - Thread-safe implementation
-- Static linking for maximum portability
+- No external dependencies
+- Extremly easy to use
 
 ## Installation
-
 Add winhello-go to your Go project:
 
 ```bash
@@ -24,7 +20,6 @@ go get github.com/julian-bruyers/winhello-go
 ```
 
 ## Usage Example
-
 ```go
 package main
 
@@ -34,16 +29,15 @@ import (
 )
 
 func main() {
-    if ok, _ := winhello.Authenticate("Please verify your identity"); ok {
-        fmt.Println("Welcome back!")
+    if isAuthenticated, _ := winhello.Authenticate("Verify your identity for winhello-go test"); isAuthenticated {
+        fmt.Println("Authentication successful!")
     } else {
-        fmt.Println("Authentication failed")
+        fmt.Println("Authentication failed!")
     }
 }
 ```
 
 **With error handling:**
-
 ```go
 package main
 
@@ -54,67 +48,50 @@ import (
 )
 
 func main() {
-    ok, err := winhello.Authenticate("Please verify your identity")
-    
-    if err != nil {
-        log.Printf("Authentication error: %v\n", err)
-        return
-    }
-    
-    if ok {
-        fmt.Println("Welcome back!")
-    } else {
-        fmt.Println("Authentication failed")
-    }
+	fmt.Println("Windows Hello Authentication Test")
+
+	isAuthenticated, err := winhello.Authenticate("Verify your identity for winhello-go test")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if isAuthenticated {
+		fmt.Println("Authentication successful!")
+	} else {
+		fmt.Println("Authentication failed!")
+	}
 }
 ```
 
-## API
+## API / Usage
 
-### Authenticate(promptMsg string) (bool, error)
-
+**winhello.Authenticate(promptMsg string) (bool, error)**
 Prompts the user to authenticate using Windows Hello.
 
-**Parameters:**
+_Parameters:_
 - `promptMsg`: The message displayed to the user during authentication
 
-**Returns:**
+_Returns:_
 - `bool`: `true` if authentication was successful, `false` otherwise
 - `error`: An error if something went wrong, `nil` on success
-
-**Example:**
-```go
-if ok, _ := winhello.Authenticate("Verify your identity"); ok {
-    // User authenticated successfully
-    processRequest()
-}
-```
-
-## Error Handling
-
-The library returns specific error types for different failure scenarios:
 
 | Error | Description |
 |-------|-------------|
 | `ErrOsNotSupported` | Called on non-Windows systems |
-| `ErrArchNotSupported` | Unsupported CPU architecture (only amd64 and ARM64 supported) |
+| `ErrArchNotSupported` | Unsupported CPU architecture (only AMD64 and ARM64 supported) |
 | `ErrNotAvailable` | Windows Hello not configured or available on the system |
 | `ErrUserCanceled` | User canceled the authentication prompt |
 | `ErrDLLLoad` | Failed to load the native DLL |
-| `ErrInternal` | Internal Windows Hello error |
-
-In most cases, you can ignore the error by using the blank identifier (`_`) and focus on the boolean result. Only use error handling if you need to differentiate between different failure modes.
+| `ErrInternal` | Internal Windows Hello DLL error |
 
 ## System Requirements
-
 - Windows 10 or later (Windows 11 recommended)
-- Go 1.25 or later
+- Go 1.25 or later (earlier versions likely work aswell)
 - AMD64 or ARM64 processor
 - Windows Hello configured and enabled
 
 ## Development and Compilation
-
-### Prerequisites
 
 1. **Go 1.25+**
    - Download: https://golang.org/dl/
@@ -130,28 +107,14 @@ In most cases, you can ignore the error by using the blank identifier (`_`) and 
 3. **Windows 10 SDK** or newer
    - Automatically installed with Visual Studio C++ Tools
 
-### Installation Steps
-
-1. **Install Visual Studio Build Tools:**
-   - Download the installer from https://visualstudio.microsoft.com/downloads/
-   - Select the "Desktop development with C++" workload
-   - Ensure "MSVC v143 compiler" and "Windows 11 SDK" are checked
-   - Complete the installation
-
-2. **Verify Installation:**
-   ```cmd
-   where vcvarsall.bat
-   ```
-   If found, the installation was successful.
-
-3. **Clone the Repository:**
+4. **Clone the Repository:**
    ```bash
    cd C:\path\to\your\projects
    git clone https://github.com/julian-bruyers/winhello-go.git
    cd winhello-go
    ```
 
-4. **Compile the Native DLL:**
+5. **Compile the Native DLL's:**
    ```bash
    go run make.go
    ```
@@ -162,14 +125,9 @@ In most cases, you can ignore the error by using the blank identifier (`_`) and 
    
    The DLLs are automatically embedded into Go binaries.
 
-5. **Run Tests (if available):**
-   ```bash
-   go test ./...
-   ```
-
 6. **Build Example Application:**
    ```bash
-   go build -o example.exe example_main.go
+   go run examples\main.go
    ```
 
 ## Project Structure
@@ -188,45 +146,8 @@ winhello-go/
 └── README.md                  # This file
 ```
 
-## Troubleshooting
-
-### Build fails with "vcvarsall.bat not found"
-- Ensure Visual Studio Build Tools are installed
-- Verify that the installation includes C++ tools
-- Check that the path matches your Visual Studio version (2019/2022)
-
-### Authentication returns `ErrNotAvailable`
-- Windows Hello may not be configured
-- Open Settings → Accounts → Sign-in options
-- Ensure at least one biometric or PIN method is enabled
-- Some systems may require hardware support (TPM, camera, etc.)
-
-### DLL fails to load at runtime
-- Ensure the application is running on Windows
-- Verify the target architecture (amd64 vs ARM64) matches your system
-- Check that the go:generate directive ran during the build
-- Clean and rebuild: `go clean && go build`
-
-## Technical Details
-
-The library works as follows:
-
-1. Pre-compiled native DLLs are embedded in the Go binary
-2. The DLL is extracted to a temporary directory at runtime
-3. The DLL is loaded and the `AuthenticateUser` function is called
-4. The C++ function returns an integer result code
-5. The result code is converted to a bool and error for the Go caller
-
-The native C++ code interfaces with Windows WinRT APIs and ensures all exceptions are caught before crossing the C++/Go boundary to maintain safety and stability.
-
 ## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) file for details.
 
 Copyright (c) 2026 Julian Bruyers
-
-## Contributing
-
-Contributions are welcome! Please report issues or submit pull requests to:
-
-https://github.com/julian-bruyers/winhello-go
