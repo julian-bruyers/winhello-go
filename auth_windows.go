@@ -68,6 +68,6 @@ func Authenticate(promptMsg string) (bool, error) {
 	case -2:
 		return false, ErrInternal
 	default:
-		return false, fmt.Errorf("%w: unknown return code %d", ErrInternal, result)
+		return false, ErrUnknownDllReturnVal
 	}
 }

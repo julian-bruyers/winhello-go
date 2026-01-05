@@ -84,6 +84,7 @@ _Returns:_
 | `ErrUserCanceled` | User canceled the authentication prompt |
 | `ErrDLLLoad` | Failed to load the native DLL |
 | `ErrInternal` | Internal Windows Hello DLL error |
+| `ErrUnknownDllReturnVal` | The embedded winhello_arch.dll returned an unhadled "status" code |
 
 ## System Requirements
 - Windows 10 or later (Windows 11 recommended)
@@ -92,7 +93,6 @@ _Returns:_
 - Windows Hello configured and enabled
 
 ## Development and Compilation
-
 1. **Go 1.25+**
    - Download: https://golang.org/dl/
 
