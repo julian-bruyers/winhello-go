@@ -56,8 +56,6 @@ import (
 )
 
 func main() {
-	fmt.Println("Windows Hello Authentication Test")
-
 	isAuthenticated, err := winhello.Authenticate("Verify your identity for winhello-go test")
 
 	if err != nil {
