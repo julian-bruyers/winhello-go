@@ -100,7 +100,7 @@ _Returns:_
 - AMD64 or ARM64 processor
 - Windows Hello configured and enabled
 
-## Development and Compilation
+## Development and Building
 1. **Go 1.25+**
    - Download: https://golang.org/dl/
 
@@ -142,14 +142,19 @@ _Returns:_
 
 ```
 winhello-go/
-├── make.go                    # Build script for C++ DLL compilation
+├── examples/
+│   └── main.go                # Example application
 ├── native/
 │   └── WinHelloDLL.cpp        # C++ implementation using WinRT APIs
 ├── auth_windows.go            # Windows-specific Go bindings
 ├── auth_stub.go               # Stub for non-Windows systems
+├── dll_amd64.go               # Go embedding logic for amd64
+├── dll_arm64.go               # Go embedding logic for ARM64
 ├── errors.go                  # Error type definitions
-├── dll_amd64.go               # Embedded DLL for amd64
-├── dll_arm64.go               # Embedded DLL for ARM64
+├── go.mod                     # Go module definition
+├── make.go                    # Build script for C++ DLL compilation
+├── winhello_amd64.dll         # Pre-compiled DLL for amd64 (embedded)
+├── winhello_arm64.dll         # Pre-compiled DLL for ARM64 (embedded)
 ├── LICENSE                    # MIT License
 └── README.md                  # This file
 ```
