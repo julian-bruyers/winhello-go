@@ -3,7 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
-	"winhello"
+
+	"github.com/julian-bruyers/winhello-go"
 )
 
 func main() {
