@@ -2,7 +2,7 @@
 // WinHelloDLL.cpp
 // ----------------------------------------------------------------------------
 // Implements a bridge between the Windows Runtime (WinRT) "Windows Hello" API
-// and a plain C-interface usable by Go (cgo).
+// and a plain C-interface for winhello-go usable by Go (cgo).
 //
 // Compilation Requirements:
 //   - Standard: C++17 (/std:c++17) for WinRT language projection support.
@@ -22,6 +22,7 @@
 
 #pragma comment(lib, "windowsapp")
 #pragma comment(lib, "user32")
+#define WINHELLO_UUID "39E050C3-4E74-441A-8DC0-B81104DF949C"
 
 #define AUTH_SUCCESS             1
 #define AUTH_FAILED_OR_CANCELLED 0
@@ -29,12 +30,13 @@
 #define AUTH_ERROR_INTERNAL     -2
 
 // Interop interface to bind Windows Hello to a specific HWND.
-struct __declspec(uuid("39E050C3-4E74-441A-8DC0-B81104DF949C")) IUserConsentVerifierInterop : ::IInspectable {
+struct __declspec(uuid(WINHELLO_UUID)) IUserConsentVerifierInterop : IInspectable {
     virtual HRESULT __stdcall RequestVerificationForWindowAsync(
-    HWND appWindow,
-    HSTRING message,
-    REFIID riid,
-    void** asyncOperation) = 0;
+        HWND appWindow,
+        HSTRING message,
+        REFIID riid,
+        void** asyncOperation
+    ) = 0;
 };
 
 static LRESULT CALLBACK dummyWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
@@ -50,25 +52,20 @@ static LRESULT CALLBACK dummyWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) 
 }
 
 static void centerWindowOnPrimaryScreen(HWND hwnd) {
-    if (!hwnd) {
-        return;
-    }
+    if (!hwnd) { return; }
 
-    RECT rc{};
-    if (!GetWindowRect(hwnd, &rc)) {
-        return;
-    }
-
-    int w = rc.right - rc.left;
-    int h = rc.bottom - rc.top;
+    RECT rect{};
+    if (!GetWindowRect(hwnd, &rect)) { return; }
 
     int sw = GetSystemMetrics(SM_CXSCREEN);
     int sh = GetSystemMetrics(SM_CYSCREEN);
+    int width = rect.right - rect.left;
+    int height = rect.bottom - rect.top;
 
-    int x = (sw - w) / 2;
-    int y = (sh - h) / 2;
+    int posX = (sw - width) / 2;
+    int posY = (sh - height) / 2;
 
-    SetWindowPos(hwnd, nullptr, x, y, w, h, SWP_NOZORDER | SWP_NOACTIVATE);
+    SetWindowPos(hwnd, nullptr, posX, posY, width, height, SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
 static HWND createHiddenOwnerWindow(HINSTANCE instance) {
@@ -87,7 +84,7 @@ static HWND createHiddenOwnerWindow(HINSTANCE instance) {
 
     // WS_EX_TOOLWINDOW: prevents Alt-Tab presence.
     // No WS_VISIBLE: window stays hidden.
-    // Give it a reasonable size so centering has meaning (even though it stays hidden).
+    // Give it a reasonable size so centering has meaning (even though it is hidden).
     HWND hwnd = CreateWindowExW(
         WS_EX_TOOLWINDOW,
         kClassName,
@@ -99,33 +96,24 @@ static HWND createHiddenOwnerWindow(HINSTANCE instance) {
         instance,
         nullptr);
 
-    if (hwnd) {
-        centerWindowOnPrimaryScreen(hwnd);
-    }
-
+    if (hwnd) { centerWindowOnPrimaryScreen(hwnd); }
     return hwnd;
 }
 
 template <typename T>
 static T syncWaitWithPump(winrt::Windows::Foundation::IAsyncOperation<T> const& op) {
     winrt::handle done{ CreateEventW(nullptr, TRUE, FALSE, nullptr) };
-    if (!done) {
-        throw winrt::hresult_error(HRESULT_FROM_WIN32(GetLastError()));
-    }
 
-    op.Completed([h = done.get()](auto&&, auto&&) noexcept {
-        SetEvent(h);
-    });
+    if (!done) { throw winrt::hresult_error(HRESULT_FROM_WIN32(GetLastError())); }
+
+    op.Completed([handle = done.get()](auto&&, auto&&) noexcept { SetEvent(handle); });
 
     HANDLE handles[1] = { done.get() };
 
     while (true) {
-        DWORD r = MsgWaitForMultipleObjectsEx(
-            1, handles, INFINITE, QS_ALLINPUT, MWMO_INPUTAVAILABLE);
+        DWORD r = MsgWaitForMultipleObjectsEx(1, handles, INFINITE, QS_ALLINPUT, MWMO_INPUTAVAILABLE);
 
-        if (r == WAIT_OBJECT_0) {
-            break;
-        }
+        if (r == WAIT_OBJECT_0) { break; }
 
         MSG msg;
         while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
@@ -142,26 +130,25 @@ static int authenticateWithOwnerHwnd(HWND owner_hwnd, const std::wstring& messag
     using namespace Windows::Security::Credentials::UI;
 
     auto availability = syncWaitWithPump(UserConsentVerifier::CheckAvailabilityAsync());
-    if (availability != UserConsentVerifierAvailability::Available) {
-        return AUTH_NOT_AVAILABLE;
-    }
 
-    // Bind prompt to HWND via interop.
+    if (availability != UserConsentVerifierAvailability::Available) { return AUTH_NOT_AVAILABLE; }
+
     auto interop = get_activation_factory<UserConsentVerifier, IUserConsentVerifierInterop>();
 
     winrt::hstring hmsg{ message };
 
     winrt::Windows::Foundation::IAsyncOperation<UserConsentVerificationResult> op{ nullptr };
+
     winrt::check_hresult(interop->RequestVerificationForWindowAsync(
         owner_hwnd,
         reinterpret_cast<HSTRING>(winrt::get_abi(hmsg)),
         winrt::guid_of<winrt::Windows::Foundation::IAsyncOperation<UserConsentVerificationResult>>(),
-        winrt::put_abi(op)));
+        winrt::put_abi(op))
+    );
 
     auto result = syncWaitWithPump(op);
-    return (result == UserConsentVerificationResult::Verified)
-            ? AUTH_SUCCESS
-            : AUTH_FAILED_OR_CANCELLED;
+
+    return (result == UserConsentVerificationResult::Verified) ? AUTH_SUCCESS : AUTH_FAILED_OR_CANCELLED;
 }
 
 /**
@@ -170,34 +157,35 @@ static int authenticateWithOwnerHwnd(HWND owner_hwnd, const std::wstring& messag
  * escape this function, as they would crash the calling Go runtime (undefined behavior).
  */
 extern "C" __declspec(dllexport) int32_t AuthenticateUser(const wchar_t* promptMessage) {
-  try {
-      // Ensure thread is COM-initialized
-      winrt::init_apartment(winrt::apartment_type::single_threaded);
+    try {
+        // Ensure thread is COM-initialized
+        winrt::init_apartment(winrt::apartment_type::single_threaded);
 
-      std::wstring msg = (promptMessage && *promptMessage) ? promptMessage : L"User authentication";
+        std::wstring pMsg = (promptMessage && *promptMessage) ? promptMessage : L"User authentication";
 
-      HINSTANCE instance = GetModuleHandleW(nullptr);
-      HWND owner = createHiddenOwnerWindow(instance);
-      if (!owner) {
-          return AUTH_ERROR_INTERNAL;
-      }
+        HINSTANCE instance = GetModuleHandleW(nullptr);
+        HWND owner = createHiddenOwnerWindow(instance);
 
-    // Helps in some focus/foreground cases (may still be ignored by Windows).
-    AllowSetForegroundWindow(ASFW_ANY);
+        if (!owner) { return AUTH_ERROR_INTERNAL; }
 
-    int result = authenticateWithOwnerHwnd(owner, msg);
+        // Helps in some focus/foreground cases (may still be ignored by Windows).
+        AllowSetForegroundWindow(ASFW_ANY);
 
-    DestroyWindow(owner);
+        int result = authenticateWithOwnerHwnd(owner, pMsg);
 
-    // Drain remaining messages related to window destruction.
-    MSG m;
-    while (PeekMessageW(&m, nullptr, 0, 0, PM_REMOVE)) {
-      TranslateMessage(&m);
-      DispatchMessageW(&m);
+        DestroyWindow(owner);
+
+        // Drain remaining messages related to window destruction.
+        MSG msg;
+        while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
+            TranslateMessage(&msg);
+            DispatchMessageW(&msg);
+        }
+
+        return result;
+
+    // Wildcard catch
+    } catch (...) {
+        return AUTH_ERROR_INTERNAL;
     }
-
-    return result;
-  } catch (...) {
-    return AUTH_ERROR_INTERNAL;
-  }
 }
