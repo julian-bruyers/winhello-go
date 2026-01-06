@@ -1,21 +1,9 @@
 <!--  README badges  -->
 <p>
-  <a href="#platform-support">
-    <img src="https://custom-icon-badges.demolab.com/badge/Windows-0078D6?logo=windows11&logoColor=white" align="right" height="20">
-  </a>
-  <a href="#installation">
-    <img src="https://img.shields.io/badge/Go-00ADD8?logo=go&logoColor=white&labelColor=2D3748&color=2D3748" align="right" height="20" hspace="5">
-  </a>
-
-  <a href="https://github.com/julian-bruyers/winhello-go/releases">
-    <img src="https://img.shields.io/github/v/release/julian-bruyers/winhello-go?label=Latest&labelColor=2D3748&color=003087" height="20">
-  </a>
-  <a href="https://github.com/julian-bruyers/winhello-go/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/julian-bruyers/winhello-go?&label=License&logo=opensourceinitiative&logoColor=ffffff&labelColor=2D3748&color=2D3748" height="20">
-  </a>
-  <a href="https://goreportcard.com/report/github.com/julian-bruyers/winhello-go">
-    <img src="https://goreportcard.com/badge/github.com/julian-bruyers/winhello-go" height="20">
-  </a>
+  <a href="#platform-support"><img src="https://custom-icon-badges.demolab.com/badge/Windows-0078D6?logo=windows11&logoColor=white" align="right" height="20"></a>
+  <a href="#installation"><img src="https://img.shields.io/badge/Go-00ADD8?logo=go&logoColor=white&labelColor=2D3748&color=2D3748" align="right" height="20" hspace="5"></a>
+  <a href="https://github.com/julian-bruyers/winhello-go/releases"><img src="https://img.shields.io/github/v/release/julian-bruyers/winhello-go?label=Latest&labelColor=2D3748&color=003087" height="20"></a>
+  <a href="https://github.com/julian-bruyers/winhello-go/blob/main/LICENSE"><img src="https://img.shields.io/github/license/julian-bruyers/winhello-go?&label=License&logo=opensourceinitiative&logoColor=ffffff&labelColor=2D3748&color=2D3748" height="20" hspace="5"></a><a href="https://goreportcard.com/report/github.com/julian-bruyers/winhello-go"><img src="https://goreportcard.com/badge/github.com/julian-bruyers/winhello-go" height="20"></a>
 </p>
 
 # winhello-go: Windows Hello Authentication for Go
