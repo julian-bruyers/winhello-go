@@ -32,16 +32,32 @@ go get github.com/julian-bruyers/winhello-go
 package main
 
 import (
-    "fmt"
-    "github.com/julian-bruyers/winhello-go"
+	"fmt"
+	"log"
+
+	"github.com/julian-bruyers/winhello-go"
 )
 
 func main() {
-    if isAuthenticated, _ := winhello.Authenticate("Verify your identity for winhello-go test"); isAuthenticated {
-        fmt.Println("Authentication successful!")
-    } else {
-        fmt.Println("Authentication failed!")
-    }
+	fmt.Println("Windows Hello Authentication Test")
+
+	// Check if Windows Hello is available
+	available := winhello.Available()
+	if !available {
+		log.Fatalln("Windows Hello is unavailable")
+	}
+
+	// Authenticate the user
+	isAuthenticated, err := winhello.Authenticate("Verify your identity for winhello-go test")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if isAuthenticated {
+		fmt.Println("Authentication successful!")
+	} else {
+		fmt.Println("Authentication failed!")
+	}
 }
 ```
 
@@ -50,12 +66,21 @@ func main() {
 package main
 
 import (
-    "fmt"
-    "log"
-    "github.com/julian-bruyers/winhello-go"
+	"fmt"
+	"log"
+
+	"github.com/julian-bruyers/winhello-go"
 )
 
 func main() {
+	fmt.Println("Windows Hello Authentication Test")
+
+	// Check if Windows Hello is available
+	available := winhello.Available()
+	if !available {
+		log.Fatalln("Windows Hello is unavailable")
+	}
+
 	isAuthenticated, err := winhello.Authenticate("Verify your identity for winhello-go test")
 
 	if err != nil {
