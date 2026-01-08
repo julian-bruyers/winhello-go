@@ -10,6 +10,12 @@ import (
 func main() {
 	fmt.Println("Windows Hello Authentication Test")
 
+	if winhello.Available() {
+		fmt.Println("Windows Hello is available")
+	} else {
+		log.Fatalln("Windows Hello is unavailable")
+	}
+
 	isAuthenticated, err := winhello.Authenticate("Verify your identity for winhello-go test")
 
 	if err != nil {

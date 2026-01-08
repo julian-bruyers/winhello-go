@@ -152,9 +152,41 @@ static int authenticateWithOwnerHwnd(HWND owner_hwnd, const std::wstring& messag
 }
 
 /**
- * Public C-Interface
+ * Public C-Interface: IsWindowsHelloAvailable
+ * Checks if Windows Hello is available on the system without triggering the authentication dialog.
+ * 
+ * Returns:
+ *   1  = Windows Hello is available
+ *   0  = Windows Hello is not available
+ *  -1  = Error occurred while checking availability
+ */
+extern "C" __declspec(dllexport) int32_t IsWindowsHelloAvailable() {
+    try {
+        // Ensure thread is COM-initialized
+        winrt::init_apartment(winrt::apartment_type::single_threaded);
+
+        using namespace winrt;
+        using namespace Windows::Security::Credentials::UI;
+
+        auto availability = syncWaitWithPump(UserConsentVerifier::CheckAvailabilityAsync());
+
+        return (availability == UserConsentVerifierAvailability::Available) ? 1 : 0;
+
+    } catch (...) {
+        return -1;
+    }
+}
+
+/**
+ * Public C-Interface: AuthenticateUser
  * This function acts as the "Exception Boundary". No C++ exceptions must ever
  * escape this function, as they would crash the calling Go runtime (undefined behavior).
+ * 
+ * Returns:
+ *   1  = Authentication successful
+ *   0  = Authentication failed or cancelled by user
+ *  -1  = Windows Hello is not available
+ *  -2  = Internal error occurred
  */
 extern "C" __declspec(dllexport) int32_t AuthenticateUser(const wchar_t* promptMessage) {
     try {

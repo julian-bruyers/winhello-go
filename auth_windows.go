@@ -38,6 +38,31 @@ func setup() error {
 	return setupError
 }
 
+func Available() bool {
+	if err := setup(); err != nil {
+		return false
+	}
+
+	procAvailable := lazyDLL.NewProc("IsWindowsHelloAvailable")
+	if err := procAvailable.Find(); err != nil {
+		return false
+	}
+
+	rawResult, _, _ := procAvailable.Call()
+	result := int32(rawResult)
+
+	switch result {
+	case 1:
+		return true
+	case 0:
+		return false
+	case -1:
+		return false
+	default:
+		return false
+	}
+}
+
 func Authenticate(promptMsg string) (bool, error) {
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
