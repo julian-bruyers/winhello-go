@@ -106,16 +106,16 @@ func main() {
 > _Returns:_
 > - `bool`: `true` if authentication was successful, `false` otherwise
 > - `error`: An error if something went wrong, `nil` on success
-
-| Error | Description |
-|-------|-------------|
-| `ErrOsNotSupported` | Called on non-Windows systems |
-| `ErrArchNotSupported` | Unsupported CPU architecture (only AMD64 and ARM64 supported) |
-| `ErrNotAvailable` | Windows Hello not configured or available on the system |
-| `ErrUserCanceled` | User canceled the authentication prompt |
-| `ErrDLLLoad` | Failed to load the native DLL |
-| `ErrInternal` | Internal Windows Hello DLL error |
-| `ErrUnknownDllReturnVal` | The embedded winhello_arch.dll returned an unhadled "status" code |
+>
+> | Error | Description |
+> |-------|-------------|
+> | `ErrOsNotSupported` | Called on non-Windows systems |
+> | `ErrArchNotSupported` | Unsupported CPU architecture (only AMD64 and ARM64 supported) |
+> | `ErrNotAvailable` | Windows Hello not configured or available on the system |
+> | `ErrUserCanceled` | User canceled the authentication prompt |
+> | `ErrDLLLoad` | Failed to load the native DLL |
+> | `ErrInternal` | Internal Windows Hello DLL error |
+> | `ErrUnknownDllReturnVal` | The embedded winhello_arch.dll returned an unhadled "status" code |
 
 ## System Requirements
 - Windows 10 or later (Windows 11 recommended)
