@@ -84,6 +84,7 @@ func main() {
 ```
 
 ## API / Usage
+> [!TIP]
 > **winhello.Avialable() (bool)**
 > Checks if Windows Hello is available on the current system.
 > 
@@ -93,6 +94,9 @@ func main() {
 > _Return:_
 > -`bool:` `true` if Windows Hello is available, `false` otherwise
 
+---
+
+> [!TIP]
 > **winhello.Authenticate(promptMsg string) (bool, error)**
 > Prompts the user to authenticate using Windows Hello.
 > 
