@@ -39,21 +39,13 @@ import (
 )
 
 func main() {
-	fmt.Println("Windows Hello Authentication Test")
-
 	// Check if Windows Hello is available
-	available := winhello.Available()
-	if !available {
+	if !winhello.Available() {
 		log.Fatalln("Windows Hello is unavailable")
 	}
 
 	// Authenticate the user
-	isAuthenticated, err := winhello.Authenticate("Verify your identity for winhello-go test")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if isAuthenticated {
+	if isAuthenticated, _ := winhello.Authenticate("Verify your identity for winhello-go test"); isAuthenticated {
 		fmt.Println("Authentication successful!")
 	} else {
 		fmt.Println("Authentication failed!")
@@ -73,16 +65,12 @@ import (
 )
 
 func main() {
-	fmt.Println("Windows Hello Authentication Test")
-
 	// Check if Windows Hello is available
-	available := winhello.Available()
-	if !available {
+	if !winhello.Available() {
 		log.Fatalln("Windows Hello is unavailable")
 	}
 
 	isAuthenticated, err := winhello.Authenticate("Verify your identity for winhello-go test")
-
 	if err != nil {
 		log.Fatal(err)
 	}
