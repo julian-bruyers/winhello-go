@@ -92,7 +92,7 @@ func main() {
 > - None
 > 
 > _Return:_
-> -`bool:` `true` if Windows Hello is available, `false` otherwise
+> - `bool:` `true` if Windows Hello is available, `false` otherwise
 
 ---
 
